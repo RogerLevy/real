@@ -1,5 +1,57 @@
 reference repl
 
+\ - History
+\ z" sys/data/consolab.ttf" #16 3 al_load_ttf_font constant consolas 
+variable hbuf variable s variable l# variable #lines
+: init-hbuf 16 allocate drop hbuf ! ; init-hbuf 
+: >hbuf s @ >r dup s +! hbuf @ s @ resize drop dup hbuf ! r> + swap move ;
+: top hbuf @ s @ l# @ 0 ?do 10 scan 1 /string loop drop ;
+: ?type dup if type else 2drop then ;
+: nl 0 pen cell+ @ 16 + at ;
+: lines ( a # - )
+    s @ swap 0 ?do
+        z[ 10 csplit ?type ]z text
+        nl 1 /string over c@ 0= if unloop 2drop exit then
+    loop 2drop
+;
+z" sys/data/MxPlus_IBM_VGA_8x16.ttf" #16 3 font: ibm8x16.fnt
+c: *history draw> ibm8x16.fnt font ! 1 1 at black top 100 lines 0 0 at white top 100 lines ;
+
+\ - History Device
+: Emit-history  drop  >r rp@ 1 >hbuf r> drop ;
+: Type-history  drop  >hbuf ;
+: CR-history  10 swap emit-history  1 #lines +! ;
+create history-vectors
+  ' drop ,
+  ' drop ,
+  ' drop ,
+  ' drop ,
+  ' drop ,
+  ' drop ,
+  ' drop ,
+  ' drop ,
+  ' drop ,
+  ' Emit-history ,
+  ' drop ,
+  ' Type-history ,
+  ' CR-history ,
+  ' drop ,
+  ' drop ,
+  ' drop ,
+  ' drop ,
+  ' drop ,
+  ' drop ,
+  ' drop ,
+  ' drop ,
+  ' drop ,
+  ' drop ,
+  ' drop ,
+  ' drop ,
+create histdev 0 , history-vectors ,
+0 value old-dev
+: history[  op-handle @ to old-dev  histdev op-handle ! ;
+: ]history  old-dev op-handle ! ; 
+
 motif var eh +basis
 : (respond>) r> eh ! ; : respond> postpone (respond>) discard-sinline ; immediate
 : respond halt @ ?; eh @ ?execute me each> recurse ;
@@ -18,7 +70,7 @@ z" sys/data/Mx437_SperryPC_8x16.ttf" #32 3 font: sherry32.fnt
     case
         ( bksp ) 8 of #tib @ 0; -1 #tib +! exit endof
         ( tab ) 9 of exit endof
-        ( enter ) 13 of obey exit endof
+        ( enter ) 13 of history[ obey ]history exit endof
         ( esc ) 27 of exit endof
     dup-endcase
     dup 32 < over 127 = or if drop exit then
@@ -42,7 +94,7 @@ bpage uios uios uiosp !
 : ]z. ]z text ; 
 : bar-text sherry32.fnt font !   white z[ .s ]z.   nr   z[ .tib ]z. ;
 
-c: *repl
+c: *cmd
     act>
         0 winh 64 - s>p x v!
     draw>
@@ -51,7 +103,10 @@ c: *repl
 ;
 
 root {
-    *repl named repl { }
+    0 0 at *generic named repl {
+        *cmd named cmd { }
+        *history named history { }
+    }
 }
 
 \ - Global events
