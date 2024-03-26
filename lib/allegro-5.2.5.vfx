@@ -3994,17 +3994,27 @@ ALLEGRO_OPENGL ALLEGRO_PROGRAMMABLE_PIPELINE or constant display-flags
     al_install_joystick check
     al_install_mouse check
     al_install_touch_input check
+    
+    0 here al_get_monitor_info
+    here @+ swap @  here 2 cells + @+ swap @ 2over 2- to monh to monw    
+
+    0 to mixer  0 to voice
+    64 al_reserve_samples 0= abort" Allegro: Error reserving samples." 
+    +audio
+
+    al_create_builtin_font to builtin-font
+;
+
+: create-display
     ALLEGRO_VSYNC  1  ALLEGRO_SUGGEST  al_set_new_display_option
 \    doublebuf? not if
 \        \ gets us one less frame of input lag
 \        \ and in development keeps the framebuffer always presented
+    [undefined] release [if]
         ALLEGRO_SINGLE_BUFFER 1 1 al_set_new_display_option
+    [then]
 \    then
-    
-    0 al_set_new_display_adapter
-    0 here al_get_monitor_info
-    here @+ swap @  here 2 cells + @+ swap @ 2over 2- to monh to monw    
-    
+
     fullscreen? if
         ALLEGRO_FULLSCREEN_WINDOW display-flags or al_set_new_display_flags
         monw to winw  monh to winh
@@ -4013,19 +4023,14 @@ ALLEGRO_OPENGL ALLEGRO_PROGRAMMABLE_PIPELINE or constant display-flags
     then
     winw winh al_create_display to display
     \ display 0 0 al_set_window_position
-    
-    0 to mixer  0 to voice
-    64 al_reserve_samples 0= abort" Allegro: Error reserving samples." 
-    +audio
-    
+        
     al_create_event_queue to queue
     queue  display       al_get_display_event_source  al_register_event_source
     queue                al_get_mouse_event_source    al_register_event_source
-    al_create_builtin_font to builtin-font
 
     ALLEGRO_ADD ALLEGRO_ALPHA ALLEGRO_INVERSE_ALPHA al_set_blender
-    
-    reset-keyboard
+
+    reset-keyboard  \ depends on queue
 ;
     
 : poll-keyboard  ( -- )
@@ -4280,3 +4285,5 @@ enum ALLEGRO_PIXEL_FORMAT {
    ALLEGRO_PIXEL_FORMAT_COMPRESSED_RGBA_DXT5  = 30,
    ALLEGRO_NUM_PIXEL_FORMATS
 }
+
+init-allegro

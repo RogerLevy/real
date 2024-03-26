@@ -42,7 +42,7 @@ get-window constant vfx-hwnd
 
 : >vfx vfx-hwnd window-to-front ;
 
-: window to fullscreen? to winh to winw init-allegro dev? if >vfx then ;
+: window to fullscreen? to winh to winw create-display ( dev? if >vfx then ) ;
 
 : winw display al_get_display_width ;
 : winh display al_get_display_height ;

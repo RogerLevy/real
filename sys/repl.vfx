@@ -11,8 +11,8 @@ z" sys/data/Mx437_SperryPC_8x16.ttf" #32 3 font: sherry32.fnt
 : .s depth | d | d for d 1 - i - pick . loop cr ; \ .fs ;
 : p.s depth | d | d for d 1 - i - pick p. loop cr ; \ .fs ;
 : ?type ?dup 0= if drop else type then ;
-: .tib ." >" tib #tib @ ?type counter 20 / 8 and if ." _" then ;
-: obey >vfx >display   cr tib #tib @ ?type   ."  >>> "   ['] interpret catch .throw   refill drop ;
+: .tib ." >" tib #tib @ ?type counter 200 / 1 and if ." _" then ;
+: obey ( >vfx >display )  cr tib #tib @ ?type   ."  >>> "   ['] interpret catch .throw   refill drop ;
 : ?charkey  
     alt? if drop exit then
     case
