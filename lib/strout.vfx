@@ -34,5 +34,7 @@ create string-vectors
 
 create strdev   0 , string-vectors ,
 
-: zstr[  0 to >str  strdev op-handle ! ;
-: ]zstr  0 emit  str  ConsoleDev op-handle ! ;
+0 value old-dev
+
+: zstr[  0 to >str  op-handle @ to old-dev  strdev op-handle ! ;
+: ]zstr  0 emit  str  old-dev op-handle ! ;

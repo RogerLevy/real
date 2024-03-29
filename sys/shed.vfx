@@ -299,8 +299,11 @@ create workspace-table ws1 , ws2 , ws3 , ws4 , ws5 , ws6 , ws7 , ws8 , ws9 , ws1
 :noname [ is events ]
     common-events
     repl @ if
-        ecat 1 = if repl-events then \ keyboard
+        ecat 1 = if \ keyboard
+            repl-events
+        then 
         ecat 2 = if \ mouse
+            repl-events
             editmode @ if shed-events else alt? not if workspace { respond } then then
         then
     else

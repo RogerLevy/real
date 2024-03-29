@@ -1,26 +1,37 @@
 reference repl
 
+: -cscan locals| c a2 a1 |
+    a1 begin dup a2 > while
+        1 -
+        dup c@ c = if 1 + exit then
+    repeat ;
+
 \ - History
-\ z" sys/data/consolab.ttf" #16 3 al_load_ttf_font constant consolas 
-variable hbuf variable s variable l# variable #lines
-: init-hbuf 16 allocate drop hbuf ! ; init-hbuf 
+variable hbuf variable s variable ofs 
+: init-hbuf 0 allocate drop hbuf ! ; init-hbuf 
 : >hbuf s @ >r dup s +! hbuf @ s @ resize drop dup hbuf ! r> + swap move ;
-: top hbuf @ s @ l# @ 0 ?do 10 scan 1 /string loop drop ;
 : ?type dup if type else 2drop then ;
 : nl 0 pen cell+ @ 16 + at ;
-: lines ( a # - )
-    s @ swap 0 ?do
-        z[ 10 csplit ?type ]z text
-        nl 1 /string over c@ 0= if unloop 2drop exit then
-    loop 2drop
-;
+: top  hbuf @ ofs @ + ;
+: logh winh 64 - 16 / ;
+: history
+    0  locals| l |
+    top begin dup hbuf @ - s @ <  l logh < and while
+        dup hbuf @ - s @ swap - z[ 10 csplit ?type ]z text nl
+        drop 1 +  1 +to l
+    repeat drop ;
+: down  top s @ 10 scan drop 1 + hbuf @ - ofs ! ;
+: up  top 1 - hbuf @ 10 -cscan hbuf @ - 0 max ofs ! ;
 z" sys/data/MxPlus_IBM_VGA_8x16.ttf" #16 3 font: ibm8x16.fnt
-c: *history draw> ibm8x16.fnt font ! 1 1 at black top 100 lines 0 0 at white top 100 lines ;
+c: *history draw> ibm8x16.fnt font ! 1 1 at black history 0 0 at white history ;
 
 \ - History Device
-: Emit-history  drop  >r rp@ 1 >hbuf r> drop ;
+variable line# variable col#
+: ?cr 10 = if 1 line# +! 0 col# ! line# @ logh >= if down then
+    else 1 col# +! col# @ winw 8 / >= if cr then then ;
+: Emit-history  drop  >r rp@ 1 >hbuf r> ?cr ;
 : Type-history  drop  >hbuf ;
-: CR-history  10 swap emit-history  1 #lines +! ;
+: CR-history  10 swap emit-history ;
 create history-vectors
   ' drop ,
   ' drop ,
@@ -48,9 +59,9 @@ create history-vectors
   ' drop ,
   ' drop ,
 create histdev 0 , history-vectors ,
-0 value old-dev
-: history[  op-handle @ to old-dev  histdev op-handle ! ;
-: ]history  old-dev op-handle ! ; 
+\ 0 value old-dev
+\ : history[  op-handle @ to old-dev  histdev op-handle ! ;
+\ : ]history  old-dev op-handle ! ; 
 
 motif var eh +basis
 : (respond>) r> eh ! ; : respond> postpone (respond>) discard-sinline ; immediate
@@ -70,7 +81,7 @@ z" sys/data/Mx437_SperryPC_8x16.ttf" #32 3 font: sherry32.fnt
     case
         ( bksp ) 8 of #tib @ 0; -1 #tib +! exit endof
         ( tab ) 9 of exit endof
-        ( enter ) 13 of history[ obey ]history exit endof
+        ( enter ) 13 of obey exit endof
         ( esc ) 27 of exit endof
     dup-endcase
     dup 32 < over 127 = or if drop exit then
@@ -85,6 +96,10 @@ bpage uios uios uiosp !
     osp @ >r uiosp @ osp !
     ALLEGRO_EVENT_KEY_CHAR happened? if
         the-char ?charkey
+    then
+    ALLEGRO_EVENT_MOUSE_AXES happened? if
+        the-wheel 0< if down down down down then
+        the-wheel 0> if up up up up then
     then
     osp @ uiosp ! r> osp !
     me to uime r> in
@@ -105,7 +120,7 @@ c: *cmd
 root {
     0 0 at *generic named repl {
         *cmd named cmd { }
-        *history named history { }
+        *history named log { }
     }
 }
 

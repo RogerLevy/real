@@ -40,7 +40,7 @@ get-window constant vfx-hwnd
     reset-keyboard 
     display al_get_win_window_handle window-to-front ;
 
-: >vfx vfx-hwnd window-to-front ;
+: >vfx vfx-hwnd window-to-front vfx-hwnd 0 0 0 0 0 $41 SetWindowPos drop ;
 
 : window to fullscreen? to winh to winw create-display ( dev? if >vfx then ) ;
 
