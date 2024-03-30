@@ -12,7 +12,7 @@ create drag-s 0 , 0 ,
 1 bit _bolted bit _locked bit _sealed bit _extension value _attributes
 
 \ - Scripting
-motif var ser var attr var post var hx var hy var data +basis
+motif var ser var attr var post var data +basis
 : (physics>) r> phy ! ;
 : physics> postpone (physics>) discard-sinline ; immediate
 :noname [ is 1object ] con !   pen v@ 2s>p x v!   physics> vx v@ 2delta* x v+! ;
@@ -29,23 +29,6 @@ motif var ser var attr var post var hx var hy var data +basis
 : aon attr @ or attr ! ;
 : replace dup >r insert   r> kill ;
 : from -> x v@ p>s at ;
-: rtransform
-    me begin ?dup while
-        dup { x v@ 2p>f  sx v@ 2p>f } 0e
-            m2 al_build_transform
-            m m2 al_compose_transform
-        -> parent @
-    repeat
-    m al_use_transform
-;
-: ascale/ sx v@ 2p/ parent @ ?dup if { recurse } then ;
-: ascale* sx v@ 2p* parent @ ?dup if { recurse } then ;
-: a+t +m identity rtransform ;
-: abox a+t hx v@ v*m w v@ ascale* 2over 2+ -t ;
-: >local abox 2drop 2- ascale/ ;
-: s>local 2s>p >local 2p>s ;
-: hide -> vis off ;
-: reveal -> vis on ;
 : container: 0 0 at *generic named ;
 : [locked] _locked aon ;
 : [bolted] _bolted aon ;
@@ -56,9 +39,6 @@ motif var ser var attr var post var hx var hy var data +basis
 : tsnap dup abs 4. + dup 8. mod - swap 0< if negate then ;
 : 2pround 2p>f fround fswap fround f>p f>p ; 
 : ?snap _bolted a? ?; x v@ snapping @ if tsnap swap tsnap swap else 2pround then x v! ;
-: upstage dup -> parent @ unshift ;
-: downstage dup -> parent @ push ;
-: box! 2s>p w v! 2s>p hx v! ;
 : ?freedata data @ ?dup if free drop then ;
 : data! ?freedata dup icount+ allocate drop >r r@ iplace r> data ! ;
 : data@ data @ dup 0; icount ;
@@ -250,7 +230,7 @@ root {
 ;
 ws1 switch
 
-\ - Global events
+\ - Events
 : ecat e ALLEGRO_EVENT.type @ 10 / ;
 create workspace-table ws1 , ws2 , ws3 , ws4 , ws5 , ws6 , ws7 , ws8 , ws9 , ws10 , trash , static ,
 
@@ -296,21 +276,6 @@ create workspace-table ws1 , ws2 , ws3 , ws4 , ws5 , ws6 , ws7 , ws8 , ws9 , ws1
     then
 ;
 
-:noname [ is events ]
-    common-events
-    repl @ if
-        ecat 1 = if \ keyboard
-            repl-events
-        then 
-        ecat 2 = if \ mouse
-            repl-events
-            editmode @ if shed-events else alt? not if workspace { respond } then then
-        then
-    else
-        editmode @ if shed-events else alt? not if workspace { respond } then then
-    then
-;
-
 \ Edit menu actions
 -sin
 : button: 8 8 at *button { >in @ bl parse data! 1w [bolted] } >in ! : ;
@@ -350,7 +315,7 @@ editmenu -> first @ {
 }
 +sin
 
-
+\ - Object error handler
 variable errors   errors on
 :noname [ is .othrow ]
     errors @ not if drop exit then
@@ -365,4 +330,20 @@ variable errors   errors on
         then
     end-case
     cr me h. ." : " me o. .s ." in: " r> r> >name count type >r
+;
+
+\ - Set global event handler
+:noname [ is events ]
+    common-events
+    repl @ if
+        ecat 1 = if \ keyboard
+            repl-events
+        then 
+        ecat 2 = if \ mouse
+            repl-events
+            editmode @ if shed-events else alt? not if workspace { respond } then then
+        then
+    else
+        editmode @ if shed-events else alt? not if workspace { respond } then then
+    then
 ;

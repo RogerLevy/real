@@ -124,7 +124,7 @@ root {
     }
 }
 
-\ - Global events
+\ - Set global event handler
 :noname [ is events ]
     ALLEGRO_EVENT_KEY_DOWN happened? if
         the-key <tab> = if repl toggle then

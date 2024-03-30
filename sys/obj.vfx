@@ -41,7 +41,7 @@ include lib/dltree.vfx
 \ - Basis
 var nam
 var dead var vis var halt var con 
-var x var y var w var h var vx var vy var sx var sy
+var x var y var w var h var vx var vy var sx var sy var hx var hy
 var beh var drw var phy var fgc var bgc 
 : +basis /obj to /basis ;
 +basis
@@ -137,3 +137,24 @@ defer .othrow ' .throw is .othrow
         over = if   } drop -1   exit then
         parent @ in
     repeat nip ( 0 ) } ;
+: rtransform
+    me begin ?dup while
+        dup { x v@ 2p>f  sx v@ 2p>f } 0e
+            m2 al_build_transform
+            m m2 al_compose_transform
+        -> parent @
+    repeat
+    m al_use_transform
+;
+: ascale/ sx v@ 2p/ parent @ ?dup if { recurse } then ;
+: ascale* sx v@ 2p* parent @ ?dup if { recurse } then ;
+: a+t +m identity rtransform ;
+: abox a+t hx v@ v*m w v@ ascale* 2over 2+ -t ;
+: >local abox 2drop 2- ascale/ ;
+: s>local 2s>p >local 2p>s ;
+: hide -> vis off ;
+: reveal -> vis on ;
+: upstage dup -> parent @ unshift ;
+: downstage dup -> parent @ push ;
+: box! 2s>p w v! 2s>p hx v! ;
+
