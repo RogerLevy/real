@@ -335,15 +335,13 @@ variable errors   errors on
 \ - Set global event handler
 :noname [ is events ]
     common-events
-    repl @ if
-        ecat 1 = if \ keyboard
+    editmode @ if
+        shed-events
+    else
+        repl @ if
             repl-events
-        then 
-        ecat 2 = if \ mouse
-            repl-events
-            editmode @ if shed-events else alt? not if workspace { respond } then then
         then
     else
-        editmode @ if shed-events else alt? not if workspace { respond } then then
+        workspace { respond }
     then
 ;
