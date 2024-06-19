@@ -1,0 +1,2 @@
+: argkey  over >r s" =" search drop nip r> swap ;
+: argval  s" =" search drop 1 /string ;

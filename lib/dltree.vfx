@@ -73,3 +73,12 @@
         next @  (dlorphan)  in
     repeat
     } 0 dup first ! last ! } ;
+
+: #children -> first @ dup if 0 swap begin 1 u+ -> next @ ?dup 0= until then ;
+: nth-child dup #children >r -> first @ swap 0 r> wrap for -> next @ loop ;
+: descendant? ( obj obj - f )
+    swap { begin
+        parent @ dup while
+        over = if   } drop -1   exit then
+        parent @ in
+    repeat nip ( 0 ) } ;

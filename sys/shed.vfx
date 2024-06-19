@@ -9,7 +9,12 @@ reference static
 reference editmenu
 reference shed
 create drag-s 0 , 0 ,
-1 bit _bolted bit _locked bit _sealed bit _extension value _attributes
+1
+bit _bolted \ can't move
+bit _locked \ can't delete
+bit _sealed \ can't add children
+bit _extension \ load another figure
+value _attributes
 
 \ - Scripting
 motif var ser var attr var post var data +basis
@@ -47,7 +52,7 @@ motif var ser var attr var post var data +basis
 
 \ Load
 : postload post @ ?dup if count evaluate then me each> recurse ;
-: oload osp @ >r me >r   ['] included catch .throw   r> in r> osp !   former { postload   me } ;
+: oload osp @ >r me >r  ['] included catch .throw  r> in  r> osp !  former { postload  me } ;
 : load bl parse figpath name>path ws { oload } to this ;
 
 \ Extensions
@@ -55,7 +60,7 @@ motif var ser var attr var post var data +basis
 c: *extension ;
 : load-extension
     cr ." Loading extension: " 2dup type space
-    2dup oload   dup me insert   me remove   in   1extension ;
+    2dup oload  dup me insert  me remove  in  1extension ;
 : .extension .\" *EXTENSION { s\" " data@ type .\" \" load-extension } " ;
 
 \ - Serialize
@@ -145,8 +150,8 @@ variable indent
 ;
 : can-delete? | it |
     it 0= if 0 exit then 
-    it editable? not if cr ." Cannot delete static objects when not editing the static layer." 0 exit then 
-    it { _locked a? } if cr ." Object is locked. Cannot delete!" 0 exit then
+    it editable? not if cr ." Cannot delete static objects while not editing the static layer." 0 exit then 
+    it { _locked a? } if cr ." Cannot delete locked object." 0 exit then
     -1 ;
 : unpick root to this ; \  0 to dragee 0 to hoveree ;
 : delete-this this can-delete? if this delete   unpick then ;

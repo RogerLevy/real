@@ -29,9 +29,9 @@ create e /ALLEGRO_EVENT allot&erase
 
 \ - Main loop
 : present display al_flip_display ;
-: think root { physics act reckon } ;
-: paint identity cls root { draw } ;
-: frame !delta poll pump think paint ;
+: update root { physics act reckon } ;
+: paint identity root { draw } ;
+: frame !delta poll pump update paint ;
 : ?quit <esc> pressed? if >vfx quit then ;
 : 0interp 0 #tib ! reset-stacks postpone \\ ;
 : pre !delta !delta 0interp win32catch Win32ExceptThrow ['] noop is EditOnError ;
